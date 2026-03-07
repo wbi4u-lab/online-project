@@ -73,6 +73,15 @@
         }
     </style>
 </head>
+    <script>
+    function updateClock() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('ko-KR', { hour12: false });
+        document.getElementById('clock').innerText = timeString;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+</script>
 <body>
     <div class="container">
         <header class="header">
@@ -86,6 +95,8 @@
                 기술의 속도 위에서 인문학적 균형 감각을 찾는 담론의 장입니다.
             </p>
         </main>
+
+        <div id="clock" style="font-size: 1.5rem; color: #3498db; margin-top: 1rem; font-weight: 300;"></div>
         
         <div class="links">
             <a href="https://cafe.naver.com/lovekyocom" class="btn" target="_blank">교실밖교사커뮤니티(교컴)</a>
