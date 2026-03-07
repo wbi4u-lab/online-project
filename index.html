@@ -1,7 +1,99 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>onlineproject.org | 교실밖 연구실</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --text-color: #333;
+            --bg-color: #f8f9fa;
+        }
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            padding: 3rem;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+        .header p {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+        .content {
+            margin: 2rem 0;
+            padding: 2rem;
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+        }
+        .philosophy {
+            font-style: italic;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            word-break: keep-all;
+        }
+        .footer {
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            color: #999;
+        }
+        .btn {
+            display: inline-block;
+            margin-top: 1.5rem;
+            padding: 0.8rem 1.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: transform 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
 <body>
-    <h1>onlineproject.org 교실밖 연구 기지</h1>
-    <p>교육 혁신을 위한 새로운 실험이 시작되는 곳입니다.</p>
+    <div class="container">
+        <header class="header">
+            <h1>onlineproject.org</h1>
+            <p>교육학자 함영기의 디지털 인문학 실험실</p>
+        </header>
+        
+        <main class="content">
+            <p class="philosophy">
+                "인공지능이 답할 때, 교육은 무엇을 물어야 하는가?"<br>
+                기술의 속도 위에서 인문학적 균형 감각을 찾는 담론의 장입니다.
+            </p>
+        </main>
+        
+        <div class="links">
+            <a href="https://cafe.naver.com/lovekyocom" class="btn" target="_blank">교실밖교사커뮤니티(교컴)</a>
+        </div>
+
+        <footer class="footer">
+            © 2026 교실밖. All rights reserved.
+        </footer>
+    </div>
 </body>
 </html>
