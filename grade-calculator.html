@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>석차등급 산출기</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background: #f0f4f8;
+    font-family: 'Nanum Gothic', 'Apple SD Gothic Neo', sans-serif;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #0f2952 0%, #1a4a8a 100%);
+    padding: 28px 40px 0;
+    color: white;
+    box-shadow: 0 4px 20px rgba(15,41,82,0.3);
+  }
+  .header-inner { max-width: 900px; margin: 0 auto; }
+  .header-label {
+    font-size: 11px; letter-spacing: 3px; opacity: 0.6;
+    margin-bottom: 6px; text-transform: uppercase;
+  }
+  .header h1 {
+    font-size: 26px; font-weight: 700;
+    letter-spacing: -0.5px; margin-bottom: 4px;
+  }
+  .header p { font-size: 13px; opacity: 0.7; margin-bottom: 20px; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 4px; }
+  .tab-btn {
+    padding: 10px 32px;
+    border: none;
+    border-radius: 10px 10px 0 0;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: inherit;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+    line-height: 1.5;
+  }
+  .tab-btn.active {
+    font-weight: 800;
+    background: #f0f4f8;
+    color: #1a3a6b;
+  }
+  .tab-btn:not(.active) {
+    font-weight: 500;
+    background: rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.85);
+  }
+  .tab-sub { display: block; font-size: 10px; font-weight: 400; opacity: 0.65; margin-top: 1px; }
+
+  /* Main */
+  .main { max-width: 900px; margin: 0 auto; padding: 24px 20px; }
+
+  /* Cards */
+  .card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #dde3ee;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .card-formula {
+    border-radius: 0 12px 12px 12px;
+    padding: 16px 24px;
+  }
+  .formula-row { display: flex; align-items: flex-start; gap: 20px; flex-wrap: wrap; }
+  .formula-icon { font-size: 13px; color: #666; padding-top: 3px; white-space: nowrap; }
+  .formula-box {
+    background: #f5f8ff;
+    border: 1px solid #c7d6f5;
+    border-radius: 8px;
+    padding: 7px 16px;
+    font-family: monospace;
+    font-size: 13px;
+    color: #1a3a6b;
+    margin-bottom: 10px;
+    display: inline-block;
+  }
+  .grade-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+  .grade-badge {
+    border-radius: 6px;
+    padding: 3px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    border-width: 1.5px;
+    border-style: solid;
+  }
+
+  /* Input card */
+  .card-input { padding: 24px; }
+  .card-title { font-size: 14px; font-weight: 700; color: #1a3a6b; margin-bottom: 6px; }
+  .card-hint { font-size: 12px; color: #888; margin-bottom: 10px; }
+  textarea {
+    width: 100%;
+    height: 160px;
+    padding: 12px 14px;
+    border: 1.5px solid #c7d6f5;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: monospace;
+    color: #1a3a6b;
+    resize: vertical;
+    outline: none;
+    background: #fafbff;
+    line-height: 1.8;
+    transition: border-color 0.2s;
+  }
+  textarea:focus { border-color: #2563a8; }
+  .btn-row { display: flex; gap: 10px; margin-top: 14px; }
+  .btn-primary {
+    background: linear-gradient(135deg, #1a3a6b, #2563a8);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 28px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: 0.5px;
+  }
+  .btn-secondary {
+    background: white;
+    color: #666;
+    border: 1.5px solid #dde3ee;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  /* Error */
+  .error-box {
+    background: #fff5f5;
+    border: 1px solid #fca5a5;
+    border-radius: 10px;
+    padding: 14px 20px;
+    color: #c0392b;
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  /* Distribution */
+  .card-dist { padding: 20px 24px; }
+  .dist-grid { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+  .dist-cell {
+    flex: 1 0 72px;
+    border-radius: 10px;
+    padding: 12px 8px;
+    text-align: center;
+    border-width: 2px;
+    border-style: solid;
+  }
+  .dist-label { font-size: 11px; color: #999; margin-bottom: 4px; }
+  .dist-count { font-size: 22px; font-weight: 800; }
+  .dist-pct { font-size: 10px; color: #aaa; margin-top: 2px; }
+
+  /* Table */
+  .card-table { overflow: hidden; }
+  .table-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid #eef2f8;
+    font-size: 14px; font-weight: 700; color: #1a3a6b;
+  }
+  .table-header span { font-size: 12px; color: #999; margin-left: 10px; font-weight: 400; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { background: #f5f8ff; }
+  th {
+    padding: 12px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #4a6fa5;
+    text-align: center;
+    border-bottom: 2px solid #dde3ee;
+  }
+  td { padding: 11px 16px; text-align: center; font-size: 13px; }
+  tr.even { background: white; }
+  tr.odd  { background: #fafbff; }
+  tr:hover { background: #eef4ff !important; }
+  .score-cell { font-size: 14px; font-weight: 600; color: #222; }
+  .rank-cell  { color: #444; }
+  .same-cell  { color: #444; }
+  .same-cell.dup { color: #e67e22; }
+  .dup-tag { font-size: 10px; margin-left: 3px; color: #e67e22; }
+  .cum-cell { color: #555; }
+  .grade-badge-cell {
+    display: inline-block;
+    color: white;
+    border-radius: 6px;
+    padding: 4px 14px;
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  /* Footer note */
+  .note { margin-top: 14px; font-size: 11px; color: #aaa; line-height: 1.8; padding: 0 4px; }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-label">고등학교 학업성적 관리</div>
+    <h1>석차등급 산출기</h1>
+    <p>원점수 입력 → 석차 · 동점자수 · 누적비율 · 석차등급 자동 산출</p>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('nine')">
+        9등급제
+        <span class="tab-sub">공통·일반선택(구)</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('five')">
+        5등급제
+        <span class="tab-sub">일반선택과목 (2025~)</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- Formula Card -->
+  <div class="card card-formula">
+    <div class="formula-row">
+      <div class="formula-icon">📐 산출 공식</div>
+      <div>
+        <div class="formula-box">누적비율(%) = (석차 + 동점자수 - 1) ÷ 재적수 × 100</div>
+        <div class="grade-badges" id="gradeBadges"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Input Card -->
+  <div class="card card-input">
+    <div class="card-title">원점수 입력</div>
+    <div class="card-hint">줄바꿈 · 쉼표 · 공백 어느 방식으로든 입력 가능 (소수점 허용)</div>
+    <textarea id="scoreInput" placeholder="예시:&#10;95&#10;87&#10;76&#10;95&#10;64&#10;..."></textarea>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="calculate()">등급 산출</button>
+      <button class="btn-secondary" onclick="resetAll()">초기화</button>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div class="error-box hidden" id="errorBox"></div>
+
+  <!-- Distribution -->
+  <div class="card card-dist hidden" id="distCard">
+    <div class="card-title" id="distTitle"></div>
+    <div class="dist-grid" id="distGrid"></div>
+  </div>
+
+  <!-- Table -->
+  <div class="card card-table hidden" id="tableCard">
+    <div class="table-header">상세 결과 <span>입력 순서대로 표시</span></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>번호</th><th>원점수</th><th>석차</th>
+            <th>동점자수</th><th>누적비율</th><th>석차등급</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="note" id="noteArea" style="display:none">
+    ※ 9등급제: 교육부 학업성적관리지침 적용 / 5등급제: 2025학년도 이후 일반선택과목 적용 기준<br>
+    ※ 탭 전환 시 각 등급제의 입력값이 독립적으로 유지됩니다.<br>
+    ※ 실제 학교생활기록부 기재 전 담당 부서와 최종 확인을 권장합니다.
+  </div>
+
+</div>
+
+<script>
+const SYSTEMS = {
+  nine: {
+    thresholds: [4, 11, 23, 40, 60, 77, 89, 96, 100],
+    colors: ["#1a3a6b","#1e5799","#2563a8","#2d7abf","#4a90a4","#6aaa96","#8ab87a","#b8c45a","#d4c026"],
+  },
+  five: {
+    thresholds: [10, 34, 66, 90, 100],
+    colors: ["#1a3a6b","#2563a8","#4a90a4","#8ab87a","#d4c026"],
+  }
+};
+
+let currentTab = 'nine';
+const savedInputs = { nine: '', five: '' };
+
+function switchTab(tab) {
+  // 현재 입력값 저장
+  savedInputs[currentTab] = document.getElementById('scoreInput').value;
+  currentTab = tab;
+
+  // 탭 버튼 상태
+  document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', (i === 0 && tab === 'nine') || (i === 1 && tab === 'five'));
+  });
+
+  // 입력값 복원
+  document.getElementById('scoreInput').value = savedInputs[tab];
+
+  // 배지 갱신
+  renderBadges();
+
+  // 결과 초기화
+  hideResults();
+}
+
+function renderBadges() {
+  const sys = SYSTEMS[currentTab];
+  const container = document.getElementById('gradeBadges');
+  container.innerHTML = sys.thresholds.map((t, i) => {
+    const c = sys.colors[i];
+    return `<span class="grade-badge" style="background:${c}18;border-color:${c};color:${c}">${i+1}등급 ≤${t}%</span>`;
+  }).join('');
+}
+
+function hideResults() {
+  document.getElementById('errorBox').classList.add('hidden');
+  document.getElementById('distCard').classList.add('hidden');
+  document.getElementById('tableCard').classList.add('hidden');
+  document.getElementById('noteArea').style.display = 'none';
+}
+
+function calculate() {
+  hideResults();
+  const raw = document.getElementById('scoreInput').value;
+  const tokens = raw.split(/[\n,\s]+/).map(s => s.trim()).filter(s => s !== '');
+
+  if (tokens.length === 0) { showError('점수를 입력해주세요.'); return; }
+
+  const scores = tokens.map(t => parseFloat(t));
+  if (scores.some(isNaN)) { showError('숫자가 아닌 값이 포함되어 있습니다.'); return; }
+  if (scores.some(s => s < 0 || s > 100)) { showError('점수는 0~100 사이여야 합니다.'); return; }
+
+  const sys = SYSTEMS[currentTab];
+  const total = scores.length;
+
+  const results = scores.map((score, idx) => {
+    const rank = scores.filter(s => s > score).length + 1;
+    const sameCount = scores.filter(s => s === score).length;
+    const cumRate = (rank + sameCount - 1) / total * 100;
+    const grade = getGrade(cumRate, sys.thresholds);
+    return { idx: idx + 1, score, rank, sameCount, cumRate, grade };
+  });
+
+  renderDist(results, total, sys);
+  renderTable(results, sys);
+  document.getElementById('noteArea').style.display = 'block';
+}
+
+function getGrade(cumRate, thresholds) {
+  for (let i = 0; i < thresholds.length; i++) {
+    if (cumRate <= thresholds[i]) return i + 1;
+  }
+  return thresholds.length;
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorBox');
+  el.textContent = '⚠️ ' + msg;
+  el.classList.remove('hidden');
+}
+
+function renderDist(results, total, sys) {
+  const dist = Array(sys.thresholds.length).fill(0);
+  results.forEach(r => dist[r.grade - 1]++);
+
+  document.getElementById('distTitle').textContent = `등급 분포 — 재적수 ${total}명`;
+
+  const grid = document.getElementById('distGrid');
+  grid.innerHTML = dist.map((count, i) => {
+    const c = sys.colors[i];
+    const bg = count > 0 ? `${c}18` : '#f9f9f9';
+    const border = count > 0 ? c : '#eee';
+    const numColor = count > 0 ? c : '#ccc';
+    const pct = count > 0 ? `${(count / total * 100).toFixed(1)}%` : '-';
+    return `
+      <div class="dist-cell" style="background:${bg};border-color:${border}">
+        <div class="dist-label">${i+1}등급</div>
+        <div class="dist-count" style="color:${numColor}">${count}</div>
+        <div class="dist-pct">${pct}</div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('distCard').classList.remove('hidden');
+}
+
+function renderTable(results, sys) {
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = results.map((r, i) => {
+    const rowClass = i % 2 === 0 ? 'even' : 'odd';
+    const dupClass = r.sameCount > 1 ? 'dup' : '';
+    const dupTag = r.sameCount > 1 ? '<span class="dup-tag">동점</span>' : '';
+    const gradeColor = sys.colors[r.grade - 1];
+    return `
+      <tr class="${rowClass}">
+        <td style="color:#888">${r.idx}</td>
+        <td class="score-cell">${r.score}</td>
+        <td class="rank-cell">${r.rank}</td>
+        <td class="same-cell ${dupClass}">${r.sameCount}${dupTag}</td>
+        <td class="cum-cell">${r.cumRate.toFixed(2)}%</td>
+        <td><span class="grade-badge-cell" style="background:${gradeColor}">${r.grade}</span></td>
+      </tr>`;
+  }).join('');
+
+  document.getElementById('tableCard').classList.remove('hidden');
+}
+
+function resetAll() {
+  savedInputs[currentTab] = '';
+  document.getElementById('scoreInput').value = '';
+  hideResults();
+}
+
+// 초기화
+renderBadges();
+</script>
+</body>
+</html>
