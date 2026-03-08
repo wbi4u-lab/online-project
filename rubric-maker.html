@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>루브릭 채점기준표 생성기</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background: #f0f4f8;
+    font-family: 'Nanum Gothic', 'Apple SD Gothic Neo', sans-serif;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #1a4a2e 0%, #2d7a4f 100%);
+    padding: 28px 40px 24px;
+    color: white;
+    box-shadow: 0 4px 20px rgba(26,74,46,0.3);
+  }
+  .header-inner { max-width: 960px; margin: 0 auto; }
+  .header-label { font-size: 11px; letter-spacing: 3px; opacity: 0.6; margin-bottom: 6px; text-transform: uppercase; }
+  .header h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 4px; }
+  .header p { font-size: 13px; opacity: 0.7; }
+
+  .main { max-width: 960px; margin: 0 auto; padding: 24px 20px; }
+
+  /* Card */
+  .card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #dde8e3;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .card-head {
+    padding: 16px 24px;
+    border-bottom: 1px solid #eef3f0;
+    font-size: 14px; font-weight: 700; color: #1a4a2e;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card-body { padding: 20px 24px; }
+
+  /* Form Grid */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .form-item label { display: block; font-size: 12px; font-weight: 700; color: #2d7a4f; margin-bottom: 5px; }
+  .form-item input, .form-item select {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1.5px solid #c8ddd0;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: inherit;
+    color: #222;
+    outline: none;
+    background: #fafcfb;
+    transition: border-color 0.2s;
+  }
+  .form-item input:focus, .form-item select:focus { border-color: #2d7a4f; }
+
+  /* 등급 이름 설정 */
+  .grade-names-row { display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+  .grade-name-item { flex: 1; min-width: 80px; }
+  .grade-name-item label { font-size: 11px; color: #888; margin-bottom: 3px; display: block; }
+  .grade-name-item input {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1.5px solid #c8ddd0;
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: inherit;
+    text-align: center;
+    outline: none;
+    background: #fafcfb;
+  }
+  .grade-name-item input:focus { border-color: #2d7a4f; }
+
+  /* 평가요소 */
+  .criteria-list { display: flex; flex-direction: column; gap: 10px; }
+  .criteria-row {
+    display: flex; align-items: center; gap: 8px;
+    background: #f5faf7;
+    border: 1.5px solid #c8ddd0;
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+  .criteria-num {
+    width: 24px; height: 24px;
+    background: #2d7a4f;
+    color: white;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .criteria-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    font-family: inherit;
+    color: #222;
+    outline: none;
+  }
+  .criteria-weight {
+    width: 70px;
+    padding: 5px 8px;
+    border: 1.5px solid #c8ddd0;
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: inherit;
+    text-align: center;
+    outline: none;
+    background: white;
+  }
+  .criteria-weight:focus { border-color: #2d7a4f; }
+  .weight-label { font-size: 11px; color: #888; white-space: nowrap; }
+  .btn-del {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #ccc;
+    font-size: 18px;
+    line-height: 1;
+    padding: 0 2px;
+    transition: color 0.2s;
+  }
+  .btn-del:hover { color: #e74c3c; }
+
+  .btn-add-criteria {
+    margin-top: 10px;
+    background: white;
+    border: 1.5px dashed #2d7a4f;
+    border-radius: 8px;
+    color: #2d7a4f;
+    font-size: 13px;
+    font-family: inherit;
+    padding: 9px;
+    width: 100%;
+    cursor: pointer;
+    font-weight: 700;
+    transition: background 0.2s;
+  }
+  .btn-add-criteria:hover { background: #f0faf4; }
+
+  /* Action buttons */
+  .action-row { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+  .btn-primary {
+    background: linear-gradient(135deg, #1a4a2e, #2d7a4f);
+    color: white; border: none; border-radius: 8px;
+    padding: 11px 28px; font-size: 14px; font-weight: 700;
+    cursor: pointer; font-family: inherit; letter-spacing: 0.3px;
+  }
+  .btn-secondary {
+    background: white; color: #2d7a4f;
+    border: 1.5px solid #2d7a4f; border-radius: 8px;
+    padding: 11px 20px; font-size: 14px;
+    cursor: pointer; font-family: inherit;
+  }
+  .btn-print {
+    background: white; color: #555;
+    border: 1.5px solid #dde; border-radius: 8px;
+    padding: 11px 20px; font-size: 14px;
+    cursor: pointer; font-family: inherit;
+  }
+
+  /* 루브릭 미리보기 */
+  .rubric-preview { overflow-x: auto; }
+  .rubric-info { margin-bottom: 16px; }
+  .rubric-info h2 { font-size: 18px; font-weight: 800; color: #1a4a2e; }
+  .rubric-info p { font-size: 12px; color: #888; margin-top: 4px; }
+
+  .rubric-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .rubric-table th {
+    background: #1a4a2e;
+    color: white;
+    padding: 10px 14px;
+    font-weight: 700;
+    text-align: center;
+    border: 1px solid #155a38;
+  }
+  .rubric-table td {
+    padding: 0;
+    border: 1px solid #c8ddd0;
+    vertical-align: top;
+  }
+  .rubric-table td.criteria-name-cell {
+    background: #f0faf4;
+    font-weight: 700;
+    color: #1a4a2e;
+    text-align: center;
+    font-size: 13px;
+    padding: 12px 14px;
+    min-width: 100px;
+  }
+  .rubric-table td.weight-cell {
+    background: #f0faf4;
+    font-size: 12px;
+    color: #888;
+    text-align: center;
+    padding: 8px;
+    min-width: 60px;
+  }
+  .rubric-cell-input {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px 12px;
+    border: none;
+    outline: none;
+    font-size: 12px;
+    font-family: inherit;
+    color: #333;
+    resize: none;
+    background: transparent;
+    line-height: 1.6;
+  }
+  .rubric-cell-input:focus { background: #f9fff9; }
+  .rubric-cell-input::placeholder { color: #ccc; font-size: 11px; }
+
+  /* 등급 헤더 색상 */
+  .grade-col-1 { background: #1a4a2e !important; }
+  .grade-col-2 { background: #2d7a4f !important; }
+  .grade-col-3 { background: #4a9a6f !important; }
+  .grade-col-4 { background: #7ab89a !important; }
+  .grade-col-5 { background: #a8ccb8 !important; color: #1a4a2e !important; }
+
+  .hidden { display: none; }
+
+  /* 인쇄 */
+  @media print {
+    body { background: white; }
+    .header, .card:not(#previewCard), .action-row, .no-print { display: none !important; }
+    #previewCard {
+      border: none; box-shadow: none;
+      margin: 0; padding: 0;
+    }
+    .card-head { display: none; }
+    .card-body { padding: 0; }
+    .rubric-cell-input { border: 1px solid #ddd; }
+    .btn-del { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-label">교수·학습 평가 도구</div>
+    <h1>루브릭 채점기준표 생성기</h1>
+    <p>평가 요소와 등급을 설정하고 기준 문구를 입력하면 채점기준표가 완성됩니다</p>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- 기본 정보 -->
+  <div class="card no-print">
+    <div class="card-head">📋 기본 정보</div>
+    <div class="card-body">
+      <div class="form-grid" style="margin-bottom:14px">
+        <div class="form-item">
+          <label>과목명</label>
+          <input type="text" id="subject" placeholder="예: 국어, 수학, 사회...">
+        </div>
+        <div class="form-item">
+          <label>평가 과제명</label>
+          <input type="text" id="taskName" placeholder="예: 논술형 평가, 발표 평가...">
+        </div>
+      </div>
+      <div class="form-grid-3">
+        <div class="form-item">
+          <label>학년 · 반</label>
+          <input type="text" id="classInfo" placeholder="예: 2학년 3반">
+        </div>
+        <div class="form-item">
+          <label>담당 교사</label>
+          <input type="text" id="teacher" placeholder="예: 홍길동">
+        </div>
+        <div class="form-item">
+          <label>등급 수</label>
+          <select id="gradeCount" onchange="updateGradeNames()">
+            <option value="3">3단계</option>
+            <option value="4">4단계</option>
+            <option value="5" selected>5단계</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 등급 이름 설정 -->
+      <div style="margin-top:16px">
+        <div style="font-size:12px;font-weight:700;color:#2d7a4f;margin-bottom:6px">등급 이름 설정</div>
+        <div class="grade-names-row" id="gradeNamesRow"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 평가 요소 -->
+  <div class="card no-print">
+    <div class="card-head">📌 평가 요소</div>
+    <div class="card-body">
+      <div style="font-size:12px;color:#888;margin-bottom:12px">
+        평가할 요소를 입력하고 배점(%)을 설정하세요. 합계가 100%가 되도록 권장합니다.
+      </div>
+      <div class="criteria-list" id="criteriaList"></div>
+      <button class="btn-add-criteria" onclick="addCriteria()">+ 평가 요소 추가</button>
+
+      <div style="margin-top:16px;text-align:right;font-size:12px" id="weightSum"></div>
+    </div>
+  </div>
+
+  <!-- 생성 버튼 -->
+  <div class="action-row no-print" style="margin-bottom:20px">
+    <button class="btn-secondary" onclick="resetAll()">초기화</button>
+    <button class="btn-primary" onclick="generateRubric()">채점기준표 생성</button>
+  </div>
+
+  <!-- 루브릭 미리보기 -->
+  <div class="card hidden" id="previewCard">
+    <div class="card-head no-print">
+      📄 채점기준표 미리보기
+      <span style="font-size:12px;font-weight:400;color:#888;margin-left:8px">
+        각 칸을 직접 클릭해서 내용을 수정할 수 있습니다
+      </span>
+    </div>
+    <div class="card-body">
+      <div class="rubric-info" id="rubricInfo"></div>
+      <div class="rubric-preview">
+        <table class="rubric-table" id="rubricTable"></table>
+      </div>
+    </div>
+    <div class="card-body" style="padding-top:0">
+      <div class="action-row no-print">
+        <button class="btn-print" onclick="window.print()">🖨️ 인쇄 / PDF 저장</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// 기본 등급 이름 세트
+const DEFAULT_GRADE_NAMES = {
+  3: ['잘함', '보통', '노력 요함'],
+  4: ['매우 잘함', '잘함', '보통', '노력 요함'],
+  5: ['매우 잘함', '잘함', '보통', '미흡', '노력 요함'],
+};
+
+const GRADE_HEADER_CLASSES = ['grade-col-1','grade-col-2','grade-col-3','grade-col-4','grade-col-5'];
+
+// 기본 평가 요소
+const defaultCriteria = [
+  { name: '내용의 충실성', weight: 40 },
+  { name: '논리적 구성', weight: 30 },
+  { name: '언어 표현', weight: 20 },
+  { name: '창의성', weight: 10 },
+];
+
+let criteriaData = [];
+let rubricCells = {}; // { 'r_c': value }
+
+function init() {
+  criteriaData = defaultCriteria.map(c => ({ ...c }));
+  renderCriteriaList();
+  updateGradeNames();
+}
+
+function updateGradeNames() {
+  const count = parseInt(document.getElementById('gradeCount').value);
+  const defaults = DEFAULT_GRADE_NAMES[count];
+  const row = document.getElementById('gradeNamesRow');
+  row.innerHTML = defaults.map((name, i) => `
+    <div class="grade-name-item">
+      <label>${i+1}등급</label>
+      <input type="text" id="gradeName_${i}" value="${name}" style="border-color:${getGradeColor(i, count)}">
+    </div>
+  `).join('');
+}
+
+function getGradeColor(i, total) {
+  const colors5 = ['#1a4a2e','#2d7a4f','#4a9a6f','#7ab89a','#a8ccb8'];
+  const colors4 = ['#1a4a2e','#2d7a4f','#4a9a6f','#7ab89a'];
+  const colors3 = ['#1a4a2e','#2d7a4f','#7ab89a'];
+  const map = { 3: colors3, 4: colors4, 5: colors5 };
+  return (map[total] || colors5)[i] || '#888';
+}
+
+function renderCriteriaList() {
+  const list = document.getElementById('criteriaList');
+  list.innerHTML = criteriaData.map((c, i) => `
+    <div class="criteria-row" id="cRow_${i}">
+      <div class="criteria-num">${i+1}</div>
+      <input class="criteria-input" type="text"
+        value="${c.name}" placeholder="평가 요소 입력..."
+        oninput="criteriaData[${i}].name = this.value">
+      <span class="weight-label">배점</span>
+      <input class="criteria-weight" type="number" min="0" max="100"
+        value="${c.weight}" placeholder="0"
+        oninput="criteriaData[${i}].weight = parseInt(this.value)||0; updateWeightSum()">
+      <span class="weight-label">%</span>
+      <button class="btn-del" onclick="removeCriteria(${i})" title="삭제">×</button>
+    </div>
+  `).join('');
+  updateWeightSum();
+}
+
+function updateWeightSum() {
+  const sum = criteriaData.reduce((acc, c) => acc + (parseInt(c.weight) || 0), 0);
+  const el = document.getElementById('weightSum');
+  const color = sum === 100 ? '#2d7a4f' : (sum > 100 ? '#e74c3c' : '#e67e22');
+  el.innerHTML = `<span style="color:${color};font-weight:700">배점 합계: ${sum}%</span>
+    ${sum !== 100 ? '<span style="color:#aaa;margin-left:6px">(100%가 되도록 권장)</span>' : ''}`;
+}
+
+function addCriteria() {
+  criteriaData.push({ name: '', weight: 0 });
+  renderCriteriaList();
+}
+
+function removeCriteria(i) {
+  if (criteriaData.length <= 1) { alert('최소 1개의 평가 요소가 필요합니다.'); return; }
+  criteriaData.splice(i, 1);
+  renderCriteriaList();
+}
+
+function generateRubric() {
+  const subject  = document.getElementById('subject').value.trim() || '미지정';
+  const taskName = document.getElementById('taskName').value.trim() || '채점기준표';
+  const classInfo= document.getElementById('classInfo').value.trim();
+  const teacher  = document.getElementById('teacher').value.trim();
+  const gradeCount = parseInt(document.getElementById('gradeCount').value);
+
+  const gradeNames = Array.from({ length: gradeCount }, (_, i) =>
+    document.getElementById(`gradeName_${i}`).value.trim() || `${i+1}등급`
+  );
+
+  const validCriteria = criteriaData.filter(c => c.name.trim() !== '');
+  if (validCriteria.length === 0) { alert('평가 요소를 1개 이상 입력해주세요.'); return; }
+
+  // 루브릭 정보
+  const infoEl = document.getElementById('rubricInfo');
+  const metaArr = [subject, classInfo, teacher ? `담당: ${teacher}` : ''].filter(Boolean);
+  infoEl.innerHTML = `
+    <h2>${taskName}</h2>
+    <p>${metaArr.join(' · ')}</p>
+  `;
+
+  // 테이블 생성
+  const table = document.getElementById('rubricTable');
+  let html = '<thead><tr>';
+  html += `<th style="min-width:100px">평가 요소</th>`;
+  html += `<th style="min-width:55px">배점</th>`;
+  gradeNames.forEach((name, i) => {
+    html += `<th class="${GRADE_HEADER_CLASSES[i]}" style="min-width:140px">${name}</th>`;
+  });
+  html += '</tr></thead><tbody>';
+
+  validCriteria.forEach((c, ri) => {
+    html += '<tr>';
+    html += `<td class="criteria-name-cell">${c.name}</td>`;
+    html += `<td class="weight-cell">${c.weight}%</td>`;
+    gradeNames.forEach((_, ci) => {
+      const key = `${ri}_${ci}`;
+      const saved = rubricCells[key] || '';
+      const placeholder = getPlaceholder(c.name, ci, gradeCount);
+      html += `<td><textarea class="rubric-cell-input"
+        data-key="${key}"
+        placeholder="${placeholder}"
+        oninput="rubricCells['${key}'] = this.value"
+      >${saved}</textarea></td>`;
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody>';
+  table.innerHTML = html;
+
+  document.getElementById('previewCard').classList.remove('hidden');
+  document.getElementById('previewCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function getPlaceholder(criteriaName, colIdx, total) {
+  // 수준에 따른 간단한 힌트
+  if (total === 5) {
+    const hints = ['매우 우수한 수준', '우수한 수준', '보통 수준', '미흡한 수준', '기초 수준'];
+    return hints[colIdx] || '';
+  }
+  if (total === 4) {
+    const hints = ['매우 우수한 수준', '우수한 수준', '보통 수준', '미흡한 수준'];
+    return hints[colIdx] || '';
+  }
+  if (total === 3) {
+    const hints = ['잘 수행함', '보통으로 수행함', '노력이 필요함'];
+    return hints[colIdx] || '';
+  }
+  return '';
+}
+
+function resetAll() {
+  if (!confirm('모든 내용을 초기화하겠습니까?')) return;
+  document.getElementById('subject').value = '';
+  document.getElementById('taskName').value = '';
+  document.getElementById('classInfo').value = '';
+  document.getElementById('teacher').value = '';
+  document.getElementById('gradeCount').value = '5';
+  criteriaData = defaultCriteria.map(c => ({ ...c }));
+  rubricCells = {};
+  renderCriteriaList();
+  updateGradeNames();
+  document.getElementById('previewCard').classList.add('hidden');
+}
+
+init();
+</script>
+</body>
+</html>
