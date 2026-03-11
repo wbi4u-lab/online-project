@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>가정통신문 생성기 (템플릿)</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f4f6fa;
+  --surface: #fff;
+  --surface2: #f0f2f8;
+  --border: #dde1ec;
+  --border-light: #eaedf6;
+  --text: #1e2240;
+  --text-dim: #6b7194;
+  --text-faint: #b0b5cc;
+  --accent: #3d5afe;
+  --accent-light: #e8ecff;
+  --accent-hover: #2a45e8;
+  --green: #2e7d52;
+  --green-bg: #edf7f1;
+  --blank: #fff3cd;
+  --blank-border: #e8a900;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+}
+.app { display: flex; min-height: 100vh; }
+
+/* ══ SIDEBAR ══ */
+.sidebar {
+  width: 310px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.sidebar-top {
+  padding: 22px 20px 16px;
+  border-bottom: 1px solid var(--border-light);
+  flex-shrink: 0;
+}
+.brand-tag { font-size: 10px; letter-spacing: 2px; color: var(--accent); font-weight: 600; text-transform: uppercase; margin-bottom: 6px; }
+.brand-title { font-family: 'Noto Serif KR', serif; font-size: 17px; font-weight: 700; color: var(--text); line-height: 1.4; }
+
+.sidebar-scroll { flex: 1; overflow-y: auto; padding: 16px 20px; display: flex; flex-direction: column; gap: 18px; }
+
+.s-block { display: flex; flex-direction: column; gap: 8px; }
+.s-label {
+  font-size: 11px; font-weight: 600; letter-spacing: 1px;
+  color: var(--text-faint); text-transform: uppercase;
+  border-bottom: 1px solid var(--border-light); padding-bottom: 5px;
+}
+.s-row-label { font-size: 12px; color: var(--text-dim); font-weight: 500; margin-bottom: 3px; }
+
+.s-input, .s-select {
+  font-family: 'Noto Sans KR', sans-serif; font-size: 13px;
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text); padding: 8px 10px; border-radius: 6px;
+  width: 100%; outline: none; transition: border-color 0.15s, background 0.15s;
+}
+.s-input:focus, .s-select:focus { border-color: var(--accent); background: #fff; }
+.s-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+/* 유형 칩 */
+.type-chips { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.type-chip {
+  font-size: 12px; font-weight: 500; padding: 8px 6px;
+  border-radius: 7px; border: 1.5px solid var(--border);
+  background: var(--surface2); color: var(--text-dim);
+  cursor: pointer; text-align: center; transition: all 0.13s; line-height: 1.3;
+}
+.type-chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+.type-chip.on { border-color: var(--accent); background: var(--accent-light); color: var(--accent); font-weight: 700; }
+
+/* 문구 팔레트 */
+.palette-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+.ptab {
+  font-size: 11px; font-weight: 500; padding: 4px 10px;
+  border-radius: 20px; border: 1px solid var(--border);
+  background: var(--surface2); color: var(--text-dim);
+  cursor: pointer; transition: all 0.13s;
+}
+.ptab:hover { border-color: var(--accent); color: var(--accent); }
+.ptab.on { border-color: var(--accent); background: var(--accent-light); color: var(--accent); font-weight: 600; }
+
+.phrase-list { display: flex; flex-direction: column; gap: 5px; max-height: 260px; overflow-y: auto; }
+.phrase-item {
+  font-size: 12px; line-height: 1.6; padding: 8px 10px;
+  border-radius: 6px; border: 1px solid var(--border-light);
+  background: var(--surface2); color: var(--text-dim);
+  cursor: pointer; transition: all 0.13s;
+}
+.phrase-item:hover { border-color: var(--accent); color: var(--text); background: var(--accent-light); }
+.phrase-hint { font-size: 11px; color: var(--text-faint); line-height: 1.6; }
+
+/* 버튼 */
+.sidebar-bottom { padding: 14px 20px; border-top: 1px solid var(--border-light); display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+.btn {
+  font-family: 'Noto Sans KR', sans-serif; font-size: 13px; font-weight: 600;
+  padding: 10px 16px; border: none; border-radius: 7px; cursor: pointer;
+  transition: all 0.15s; width: 100%; text-align: center;
+}
+.btn-accent { background: var(--accent); color: #fff; }
+.btn-accent:hover { background: var(--accent-hover); }
+.btn-ghost { background: var(--surface2); color: var(--text-dim); border: 1px solid var(--border); font-weight: 500; }
+.btn-ghost:hover { color: var(--text); border-color: var(--text-dim); }
+.btn-row { display: flex; gap: 8px; }
+.btn-row .btn { font-size: 12px; padding: 8px 10px; }
+
+/* ══ MAIN ══ */
+.main { flex: 1; padding: 28px 36px; overflow: auto; display: flex; flex-direction: column; gap: 14px; }
+
+.toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 18px;
+  box-shadow: 0 1px 6px rgba(61,90,254,0.04);
+}
+.toolbar-left { font-family: 'Noto Serif KR', serif; font-size: 14px; font-weight: 600; color: var(--text); }
+.toolbar-right { display: flex; gap: 8px; }
+.tbtn {
+  font-family: 'Noto Sans KR', sans-serif; font-size: 12px; font-weight: 500;
+  padding: 6px 14px; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--surface); color: var(--text-dim); cursor: pointer; transition: all 0.13s;
+}
+.tbtn:hover { border-color: var(--accent); color: var(--accent); }
+.tbtn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.tbtn.primary:hover { background: var(--accent-hover); }
+
+/* 빈칸 안내 */
+.blank-notice {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 14px; border-radius: 7px;
+  background: var(--blank); border: 1px solid var(--blank-border);
+  font-size: 12px; color: #7a5800; font-weight: 500;
+}
+
+/* 문서 */
+.doc-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  box-shadow: 0 2px 14px rgba(61,90,254,0.06); overflow: hidden; flex: 1;
+}
+.doc-inner { padding: 48px 60px; min-height: 640px; }
+
+/* 가정통신문 문서 스타일 */
+.doc-area {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 14.5px;
+  line-height: 2;
+  color: #1a1a2e;
+  outline: none;
+  min-height: 560px;
+  word-break: keep-all;
+}
+.doc-area:focus { outline: none; }
+
+/* 빈칸 강조 */
+.doc-area .blank {
+  background: var(--blank);
+  border-bottom: 2px solid var(--blank-border);
+  border-radius: 2px;
+  padding: 0 3px;
+  color: #7a5800;
+  cursor: text;
+  white-space: nowrap;
+}
+
+/* 인쇄 */
+@media print {
+  body { background: white; }
+  .sidebar, .toolbar, .blank-notice { display: none !important; }
+  .app { display: block; }
+  .main { padding: 0; gap: 0; }
+  .doc-card { border: none; box-shadow: none; border-radius: 0; }
+  .doc-inner { padding: 20px 28px; }
+  .doc-area { font-size: 13pt; line-height: 2.2; }
+  .blank { background: none !important; border-bottom: 1px solid #999 !important; color: #333 !important; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ══════════ SIDEBAR ══════════ -->
+<aside class="sidebar">
+  <div class="sidebar-top">
+    <div class="brand-tag">교컴 · 교사 도구</div>
+    <div class="brand-title">가정통신문<br>생성기 (템플릿)</div>
+  </div>
+
+  <div class="sidebar-scroll">
+
+    <!-- 학교 정보 -->
+    <div class="s-block">
+      <div class="s-label">학급 정보</div>
+      <div class="s-grid">
+        <div>
+          <div class="s-row-label">학교명</div>
+          <input class="s-input" id="iSchool" placeholder="○○초등학교" oninput="syncInfo()">
+        </div>
+        <div>
+          <div class="s-row-label">학년 · 반</div>
+          <input class="s-input" id="iClass" placeholder="3학년 2반" oninput="syncInfo()">
+        </div>
+        <div>
+          <div class="s-row-label">담임</div>
+          <input class="s-input" id="iTeacher" placeholder="홍길동" oninput="syncInfo()">
+        </div>
+        <div>
+          <div class="s-row-label">날짜</div>
+          <input class="s-input" id="iDate" type="date" oninput="syncInfo()">
+        </div>
+        <div style="grid-column:1/-1">
+          <div class="s-row-label">연락처</div>
+          <input class="s-input" id="iPhone" placeholder="학교 전화번호" oninput="syncInfo()">
+        </div>
+      </div>
+    </div>
+
+    <!-- 통신문 유형 -->
+    <div class="s-block">
+      <div class="s-label">통신문 유형</div>
+      <div class="type-chips" id="typeChips">
+        <div class="type-chip on" data-t="semester">📋 학기초 안내</div>
+        <div class="type-chip" data-t="trip">🚌 현장학습</div>
+        <div class="type-chip" data-t="vacation">☀️ 방학 안내</div>
+        <div class="type-chip" data-t="consult">💬 학부모 상담</div>
+        <div class="type-chip" data-t="health">🏥 건강·안전</div>
+        <div class="type-chip" data-t="event">🎉 행사 안내</div>
+      </div>
+      <button class="btn btn-accent" style="margin-top:4px" onclick="loadTemplate()">이 유형으로 불러오기</button>
+    </div>
+
+    <!-- 문구 팔레트 -->
+    <div class="s-block">
+      <div class="s-label">문구 팔레트</div>
+      <div class="palette-tabs" id="paletteTabs">
+        <div class="ptab on" data-p="greet">인사말</div>
+        <div class="ptab" data-p="body">본문</div>
+        <div class="ptab" data-p="request">협조요청</div>
+        <div class="ptab" data-p="close">마무리</div>
+      </div>
+      <div class="phrase-list" id="phraseList"></div>
+      <div class="phrase-hint">※ 문구를 클릭하면 커서 위치에 삽입됩니다</div>
+    </div>
+
+  </div><!-- /sidebar-scroll -->
+
+  <div class="sidebar-bottom">
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="copyDoc()">📋 복사</button>
+      <button class="btn btn-ghost" onclick="clearDoc()">초기화</button>
+      <button class="btn btn-accent" onclick="window.print()">🖨 인쇄</button>
+    </div>
+  </div>
+</aside>
+
+<!-- ══════════ MAIN ══════════ -->
+<main class="main">
+
+  <div class="toolbar">
+    <div class="toolbar-left">미리보기 · 직접 편집 가능</div>
+    <div class="toolbar-right">
+      <button class="tbtn" onclick="fillBlanks()">✏️ 빈칸 채우기 도우미</button>
+    </div>
+  </div>
+
+  <div class="blank-notice" id="blankNotice" style="display:none">
+    ⚠️ 노란색 <span class="blank" style="display:inline">[ 빈칸 ]</span> 을 클릭하거나 직접 수정해 주세요.
+  </div>
+
+  <div class="doc-card">
+    <div class="doc-inner">
+      <div class="doc-area" id="docArea" contenteditable="true" spellcheck="false"></div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+// ════════════════════════════════════════
+// 데이터
+// ════════════════════════════════════════
+
+const PHRASES = {
+  greet: [
+    '안녕하십니까? 따뜻한 봄날, 가정에 건강과 행복이 가득하시길 바랍니다.',
+    '항상 우리 학교 교육에 깊은 관심과 사랑을 보내주셔서 감사합니다.',
+    '학부모님의 변함없는 협조와 응원에 진심으로 감사드립니다.',
+    '새 학기를 맞이하여 학부모님께 다음과 같이 안내 말씀 드립니다.',
+    '우리 아이들의 건강하고 행복한 학교생활을 위해 아래와 같이 안내드립니다.',
+    '바쁘신 중에도 항상 자녀 교육에 깊은 관심을 가져 주셔서 감사합니다.',
+  ],
+  body: [
+    '일시: [월  일 (요일)  시 ~ 시]',
+    '장소: [  ]',
+    '준비물: [  ]',
+    '참가 대상: [학년  반 전체 학생]',
+    '비용: [  원 (  일까지 납부)]',
+    '신청 방법: [  ]',
+    '담당 교사: [  ] 선생님',
+    '문의사항은 담임교사에게 연락 주시기 바랍니다.',
+    '첨부 자료를 참고하시어 자녀와 함께 확인해 주시기 바랍니다.',
+  ],
+  request: [
+    '자녀와 함께 내용을 확인하시고 해당 부분에 서명 후 제출해 주시기 바랍니다.',
+    '궁금하신 점은 담임교사(☎ [전화번호])로 연락 주시기 바랍니다.',
+    '제출 기한을 꼭 지켜주시면 감사하겠습니다.',
+    '동의서는 [  ]일까지 담임교사에게 제출해 주시기 바랍니다.',
+    '학교 홈페이지 공지사항에서도 확인하실 수 있습니다.',
+    '부득이한 사정으로 불참 시 사전에 꼭 연락 주시기 바랍니다.',
+    '자녀가 건강 상태가 좋지 않을 경우 반드시 사전에 알려주시기 바랍니다.',
+  ],
+  close: [
+    '가정에서도 많은 관심과 격려 부탁드립니다.',
+    '학부모님의 적극적인 협조와 지원을 부탁드립니다.',
+    '늘 건강하시고 행복한 가정 되시기 바랍니다.',
+    '앞으로도 우리 아이들을 위해 함께 최선을 다하겠습니다.',
+    '감사합니다.',
+  ],
+};
+
+// 유형별 템플릿
+const TEMPLATES = {
+  semester: (d) => `
+${d.school}  ${d.cls}  가정통신문
+
+${d.date}
+
+제목: ${d.year}학년도 ${d.term}학기 학급 운영 안내
+
+학부모님께
+
+안녕하십니까? 새 학기가 시작되었습니다. 저는 올해 ${d.cls} 담임을 맡게 된 [  이름  ] 입니다. 우리 아이들이 즐겁고 보람 있는 학교생활을 할 수 있도록 최선을 다하겠습니다. 학부모님의 변함없는 관심과 협조를 부탁드립니다.
+
+◆ 학급 운영 방침
+
+저는 아이들이 [  학급 운영 핵심 가치  ]을 배우고 실천하는 학급을 만들고자 합니다. 서로 존중하고 배려하는 학급 분위기 속에서 아이들이 건강하게 성장할 수 있도록 지도하겠습니다.
+
+◆ 기본 준비물 안내
+
+• 매일 지참: [  준비물 목록  ]
+• 선택 준비물: [  ]
+
+◆ 학교생활 안내
+
+• 등교 시간: 오전 [  ]시 ~ [  ]시 (지각 기준: [  ]시)
+• 하교 시간: [  ]
+• 급식: 학교 식당에서 제공됩니다.
+• 방과후 학교: [  ]
+
+◆ 담임 상담 안내
+
+• 상담 희망 시: 사전에 연락 주시면 일정을 조율하겠습니다.
+• 연락처: ${d.phone || '[  전화번호  ]'}
+
+학부모님의 관심과 협조가 우리 아이들의 행복한 학교생활에 큰 힘이 됩니다. 감사합니다.
+
+                                        ${d.school}
+                                        ${d.cls} 담임 ${d.teacher} 올림
+`,
+
+  trip: (d) => `
+${d.school}  ${d.cls}  가정통신문
+
+${d.date}
+
+제목: 현장학습 실시 안내
+
+학부모님께
+
+안녕하십니까? 학부모님의 깊은 관심에 감사드립니다. 우리 학생들에게 풍요로운 학습 경험을 제공하고자 현장학습을 실시하고자 합니다. 아래 내용을 확인하시고 협조해 주시기 바랍니다.
+
+◆ 현장학습 개요
+
+• 일  시: [  월  일 (  요일)  시 ~  시]
+• 장  소: [  장소명  ]
+• 목  적: [  학습 목적  ]
+• 이  동: [  교통수단  ]
+
+◆ 준비물
+
+• 필수: [  ]
+• 복장: [  ]
+• 기타: [  ]
+
+◆ 비용 안내
+
+• 금  액: [  ] 원
+• 납부 방법: [  ]
+• 납부 기한: [  월  일까지]
+
+◆ 유의 사항
+
+• 당일 컨디션이 좋지 않은 경우 반드시 사전에 담임에게 알려주세요.
+• [  기타 유의사항  ]
+
+아래 동의서를 작성하시어 [  월  일]까지 담임교사에게 제출해 주시기 바랍니다.
+
+- - - - - - - - - - - (아래를 잘라 제출해 주세요) - - - - - - - - - - -
+
+  학생 이름: ___________   학년 반: ___________
+
+  위 현장학습에 □ 동의합니다  □ 동의하지 않습니다
+
+  보호자 서명: ___________  (☎ ___________)
+
+                                        ${d.school}
+                                        ${d.cls} 담임 ${d.teacher} 올림
+`,
+
+  vacation: (d) => `
+${d.school}  ${d.cls}  가정통신문
+
+${d.date}
+
+제목: [  방학  ] 안내
+
+학부모님께
+
+안녕하십니까? 학부모님의 관심과 협조 덕분에 [  학기  ]를 무사히 마치게 되었습니다. 감사드립니다.
+
+◆ 방학 일정
+
+• 방학식: [  월  일 (  요일)]
+• 개학일: [  월  일 (  요일)]
+• 방학 기간: 총 [  ]일
+
+◆ 방학 중 생활 안내
+
+• 규칙적인 생활 습관을 유지하도록 지도해 주시기 바랍니다.
+• 방학 과제: [  ]
+• 제출 기한: 개학 당일
+
+◆ 안전 생활 안내
+
+• 수상 안전: 반드시 보호자와 함께 물놀이를 하고, 안전 수칙을 지켜주세요.
+• 교통 안전: [  ]
+• 기타: [  ]
+
+◆ 개학 준비물
+
+• [  ]
+
+건강하고 즐거운 방학 보내시기 바랍니다. 개학 후에도 변함없는 관심 부탁드립니다.
+
+                                        ${d.school}
+                                        ${d.cls} 담임 ${d.teacher} 올림
+`,
+
+  consult: (d) => `
+${d.school}  ${d.cls}  가정통신문
+
+${d.date}
+
+제목: 학부모 개별 상담 안내
+
+학부모님께
+
+안녕하십니까? 우리 아이들의 학교생활과 학습 상황을 함께 나누고자 학부모 개별 상담을 실시하고자 합니다. 바쁘시더라도 자리를 마련해 주시면 감사하겠습니다.
+
+◆ 상담 일정
+
+• 기  간: [  월  일 ~  월  일]
+• 시  간: [  시 ~  시]
+• 장  소: [  학년  반 교실]
+• 방  법: 대면 상담 / 전화 상담 (선택 가능)
+
+◆ 상담 내용
+
+• 학교생활 전반 (교우 관계, 생활 태도 등)
+• 학습 상황 및 학업 성취도
+• 학부모 건의사항 및 질의응답
+
+◆ 신청 방법
+
+아래 신청서를 작성하여 [  월  일]까지 담임교사에게 제출해 주세요.
+
+- - - - - - - - - - - (아래를 잘라 제출해 주세요) - - - - - - - - - - -
+
+  학생 이름: ___________   희망 날짜: ___________ 
+
+  희망 시간: ___________   연락처: ___________
+
+  상담 방법: □ 대면  □ 전화       서명: ___________
+
+                                        ${d.school}
+                                        ${d.cls} 담임 ${d.teacher} 올림
+`,
+
+  health: (d) => `
+${d.school}  ${d.cls}  가정통신문
+
+${d.date}
+
+제목: [  건강·안전  ] 안내
+
+학부모님께
+
+안녕하십니까? 우리 학생들의 건강하고 안전한 학교생활을 위해 아래와 같이 안내드립니다.
+
+◆ 안내 사항
+
+[  안내 내용을 여기에 작성해 주세요  ]
+
+◆ 협조 요청 사항
+
+• [  ]
+• [  ]
+• [  ]
+
+◆ 관련 문의
+
+• 담당: 보건교사 [  ] 선생님
+• 연락처: ${d.phone || '[  전화번호  ]'}
+
+학생들의 건강과 안전을 위해 가정에서도 각별한 관심을 부탁드립니다.
+
+                                        ${d.school}
+                                        ${d.cls} 담임 ${d.teacher} 올림
+`,
+
+  event: (d) => `
+${d.school}  ${d.cls}  가정통신문
+
+${d.date}
+
+제목: [  행사명  ] 안내
+
+학부모님께
+
+안녕하십니까? 학부모님의 깊은 관심과 성원에 감사드립니다. 우리 학생들을 위한 [  행사명  ]을 아래와 같이 개최합니다. 많은 관심 부탁드립니다.
+
+◆ 행사 개요
+
+• 행사명: [  ]
+• 일  시: [  월  일 (  요일)  시 ~  시]
+• 장  소: [  ]
+• 대  상: [  ]
+
+◆ 주요 내용
+
+[  행사 내용 및 일정을 작성해 주세요  ]
+
+◆ 참가 안내
+
+• [  ]
+
+◆ 기타 사항
+
+• 문의: ${d.phone || '[  전화번호  ]'}
+
+학부모님의 많은 관심과 참여를 부탁드립니다. 감사합니다.
+
+                                        ${d.school}
+                                        ${d.cls} 담임 ${d.teacher} 올림
+`,
+};
+
+// ════════════════════════════════════════
+// 상태
+// ════════════════════════════════════════
+let currentType = 'semester';
+let currentPalette = 'greet';
+
+// ════════════════════════════════════════
+// 초기화
+// ════════════════════════════════════════
+window.onload = () => {
+  document.getElementById('iDate').value = new Date().toISOString().split('T')[0];
+  renderPhrases();
+  loadTemplate();
+
+  // 유형 칩 클릭
+  document.querySelectorAll('.type-chip').forEach(c => {
+    c.onclick = () => {
+      document.querySelectorAll('.type-chip').forEach(x => x.classList.remove('on'));
+      c.classList.add('on');
+      currentType = c.dataset.t;
+    };
+  });
+
+  // 팔레트 탭 클릭
+  document.querySelectorAll('.ptab').forEach(t => {
+    t.onclick = () => {
+      document.querySelectorAll('.ptab').forEach(x => x.classList.remove('on'));
+      t.classList.add('on');
+      currentPalette = t.dataset.p;
+      renderPhrases();
+    };
+  });
+};
+
+// ════════════════════════════════════════
+// 정보 수집
+// ════════════════════════════════════════
+function getInfo() {
+  const dateVal = document.getElementById('iDate').value;
+  let dateStr = '';
+  if (dateVal) {
+    const d = new Date(dateVal);
+    dateStr = `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;
+  }
+  const now = new Date();
+  const month = now.getMonth() + 1;
+  return {
+    school: document.getElementById('iSchool').value.trim() || '○○학교',
+    cls:    document.getElementById('iClass').value.trim()  || '[학년 반]',
+    teacher:document.getElementById('iTeacher').value.trim()|| '[담임 교사]',
+    phone:  document.getElementById('iPhone').value.trim(),
+    date:   dateStr || `${now.getFullYear()}년 ${month}월 ${now.getDate()}일`,
+    year:   now.getFullYear(),
+    term:   month <= 7 ? '1' : '2',
+  };
+}
+
+function syncInfo() { /* 실시간 반영 없이 불러오기 버튼으로만 갱신 */ }
+
+// ════════════════════════════════════════
+// 템플릿 불러오기
+// ════════════════════════════════════════
+function loadTemplate() {
+  const info = getInfo();
+  const tmpl = TEMPLATES[currentType];
+  if (!tmpl) return;
+  const text = tmpl(info).trim();
+  renderDoc(text);
+  checkBlanks();
+}
+
+// ════════════════════════════════════════
+// 문서 렌더링 (빈칸 하이라이트)
+// ════════════════════════════════════════
+function renderDoc(text) {
+  // [  텍스트  ] 형태를 span.blank 로 변환
+  const escaped = text
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;');
+  const highlighted = escaped.replace(/\[([^\]]*)\]/g, (_, inner) => {
+    return `<span class="blank" contenteditable="true">[${inner}]</span>`;
+  });
+  const withBr = highlighted.replace(/\n/g, '<br>');
+  document.getElementById('docArea').innerHTML = withBr;
+}
+
+function checkBlanks() {
+  const hasBlank = document.getElementById('docArea').querySelector('.blank');
+  document.getElementById('blankNotice').style.display = hasBlank ? 'flex' : 'none';
+}
+
+// ════════════════════════════════════════
+// 문구 팔레트
+// ════════════════════════════════════════
+function renderPhrases() {
+  const list = document.getElementById('phraseList');
+  const phrases = PHRASES[currentPalette] || [];
+  list.innerHTML = phrases.map(p =>
+    `<div class="phrase-item" onclick="insertPhrase(this)">${p}</div>`
+  ).join('');
+}
+
+function insertPhrase(el) {
+  const text = el.textContent;
+  const docArea = document.getElementById('docArea');
+  docArea.focus();
+  const sel = window.getSelection();
+  if (sel && sel.rangeCount > 0) {
+    const range = sel.getRangeAt(0);
+    // 선택 범위가 docArea 안에 있는지 확인
+    if (docArea.contains(range.commonAncestorContainer)) {
+      range.deleteContents();
+      const textNode = document.createTextNode(text);
+      range.insertNode(textNode);
+      range.setStartAfter(textNode);
+      range.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(range);
+      return;
+    }
+  }
+  // 선택 없으면 끝에 추가
+  docArea.innerHTML += '<br>' + text;
+  // 커서를 끝으로
+  const range2 = document.createRange();
+  range2.selectNodeContents(docArea);
+  range2.collapse(false);
+  const sel2 = window.getSelection();
+  sel2.removeAllRanges();
+  sel2.addRange(range2);
+}
+
+// ════════════════════════════════════════
+// 빈칸 채우기 도우미
+// ════════════════════════════════════════
+function fillBlanks() {
+  const blanks = document.getElementById('docArea').querySelectorAll('.blank');
+  if (blanks.length === 0) {
+    alert('채울 빈칸이 없습니다. 이미 완성된 상태입니다.');
+    return;
+  }
+  // 첫 번째 빈칸으로 포커스
+  blanks[0].focus();
+  const range = document.createRange();
+  range.selectNodeContents(blanks[0]);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  blanks[0].scrollIntoView({ behavior:'smooth', block:'center' });
+}
+
+// ════════════════════════════════════════
+// 복사
+// ════════════════════════════════════════
+function copyDoc() {
+  const text = document.getElementById('docArea').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = event.target;
+    btn.textContent = '✅ 복사됨';
+    setTimeout(() => btn.textContent = '📋 복사', 2000);
+  });
+}
+
+// ════════════════════════════════════════
+// 초기화
+// ════════════════════════════════════════
+function clearDoc() {
+  if (!confirm('문서를 초기화하시겠습니까?')) return;
+  document.getElementById('iSchool').value = '';
+  document.getElementById('iClass').value = '';
+  document.getElementById('iTeacher').value = '';
+  document.getElementById('iPhone').value = '';
+  document.getElementById('iDate').value = new Date().toISOString().split('T')[0];
+  currentType = 'semester';
+  document.querySelectorAll('.type-chip').forEach((c,i) => c.classList.toggle('on', i===0));
+  loadTemplate();
+}
+</script>
+</body>
+</html>
