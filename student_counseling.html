@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>학생 상담일지</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f5f6f9;
+  --surface: #ffffff;
+  --surface2: #f0f3f8;
+  --surface3: #e8ecf5;
+  --border: #dde2ef;
+  --border-light: #eaecf5;
+  --text: #1c2136;
+  --text-dim: #626d96;
+  --text-faint: #a8b0cc;
+  --accent: #4a6fa5;
+  --accent-light: #e8eef8;
+  --accent-hover: #3a5f95;
+  --green: #3a7d5c;
+  --green-bg: #ecf7f2;
+  --orange: #c06000;
+  --orange-bg: #fff4e6;
+  --red: #b03030;
+  --red-bg: #fdf0f0;
+  --purple: #6a4fa0;
+  --purple-bg: #f2eeff;
+
+  /* 상담 유형 색상 */
+  --c-academic: #4a6fa5;
+  --c-peer: #3a7d5c;
+  --c-family: #c06000;
+  --c-career: #6a4fa0;
+  --c-emotion: #b03030;
+  --c-behavior: #5a7a3a;
+  --c-other: #607080;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
+
+/* ══════════ 3단 레이아웃 ══════════ */
+.app { display: flex; height: 100vh; overflow: hidden; }
+
+/* ── 왼쪽: 학생 목록 패널 ── */
+.panel-left {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.panel-left-top {
+  padding: 18px 16px 14px;
+  border-bottom: 1px solid var(--border-light);
+  flex-shrink: 0;
+}
+.brand-tag { font-size: 9px; letter-spacing: 2.5px; color: var(--accent); font-weight: 600; text-transform: uppercase; margin-bottom: 5px; }
+.brand-title { font-family: 'Noto Serif KR', serif; font-size: 16px; font-weight: 700; color: var(--text); line-height: 1.4; }
+
+.search-box {
+  margin: 12px 14px 8px;
+  position: relative;
+  flex-shrink: 0;
+}
+.search-box input {
+  width: 100%; padding: 7px 10px 7px 30px;
+  border: 1px solid var(--border); border-radius: 6px;
+  background: var(--surface2); font-family: 'Noto Sans KR', sans-serif;
+  font-size: 12px; color: var(--text); outline: none;
+  transition: border-color 0.15s;
+}
+.search-box input:focus { border-color: var(--accent); background: #fff; }
+.search-box .search-icon { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); font-size: 13px; opacity: 0.4; pointer-events: none; }
+
+.student-list { flex: 1; overflow-y: auto; padding: 4px 8px 8px; }
+.student-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 9px 10px; border-radius: 7px;
+  cursor: pointer; transition: background 0.13s;
+  margin-bottom: 2px;
+}
+.student-item:hover { background: var(--surface2); }
+.student-item.active { background: var(--accent-light); }
+.student-avatar {
+  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: #fff;
+}
+.student-info { flex: 1; min-width: 0; }
+.student-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.student-meta { font-size: 11px; color: var(--text-faint); margin-top: 1px; }
+.student-badge {
+  min-width: 18px; height: 18px; border-radius: 9px;
+  background: var(--accent); color: #fff;
+  font-size: 10px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 5px;
+}
+
+.add-student-btn {
+  margin: 8px 10px 12px; padding: 8px;
+  border: 1.5px dashed var(--border); border-radius: 7px;
+  background: transparent; color: var(--text-faint);
+  font-family: 'Noto Sans KR', sans-serif; font-size: 12px;
+  cursor: pointer; text-align: center; transition: all 0.13s;
+  flex-shrink: 0;
+}
+.add-student-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+
+/* 상담기법 버튼 */
+.technique-btn {
+  margin: 0 10px 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #4a6fa5 0%, #6a4fa0 100%);
+  color: #fff; font-family: 'Noto Sans KR', sans-serif;
+  font-size: 12px; font-weight: 600;
+  cursor: pointer; text-align: center;
+  border: none; transition: opacity 0.15s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  flex-shrink: 0;
+}
+.technique-btn:hover { opacity: 0.9; }
+
+/* ── 가운데: 상담일지 ── */
+.panel-main {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.main-header {
+  padding: 16px 24px 14px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.main-header-left { display: flex; align-items: center; gap: 12px; }
+.header-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 700; color: #fff;
+  flex-shrink: 0;
+}
+.header-name { font-family: 'Noto Serif KR', serif; font-size: 18px; font-weight: 700; color: var(--text); }
+.header-sub { font-size: 12px; color: var(--text-faint); margin-top: 2px; }
+.header-actions { display: flex; gap: 8px; }
+.hbtn {
+  font-family: 'Noto Sans KR', sans-serif; font-size: 12px; font-weight: 500;
+  padding: 7px 14px; border-radius: 6px; cursor: pointer; transition: all 0.13s; border: none;
+}
+.hbtn-ghost { background: var(--surface2); color: var(--text-dim); border: 1px solid var(--border); }
+.hbtn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+.hbtn-accent { background: var(--accent); color: #fff; }
+.hbtn-accent:hover { background: var(--accent-hover); }
+.hbtn-danger { background: var(--red-bg); color: var(--red); border: 1px solid #f0c0c0; }
+.hbtn-danger:hover { background: #f8dada; }
+
+.main-body { flex: 1; overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
+
+/* 빈 화면 */
+.empty-state {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  color: var(--text-faint); text-align: center; gap: 14px;
+  padding: 60px 40px;
+}
+.empty-state .icon { font-size: 52px; opacity: 0.5; }
+.empty-state p { font-size: 14px; line-height: 1.9; color: var(--text-dim); }
+
+/* 상담 기록 카드 */
+.log-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: box-shadow 0.15s;
+}
+.log-card:hover { box-shadow: 0 3px 14px rgba(74,111,165,0.1); }
+.log-card-header {
+  padding: 12px 16px 10px;
+  display: flex; align-items: flex-start; justify-content: space-between;
+  border-bottom: 1px solid var(--border-light);
+}
+.log-card-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+.log-type-badge {
+  font-size: 10px; font-weight: 700; padding: 3px 8px;
+  border-radius: 20px; white-space: nowrap; flex-shrink: 0;
+}
+.log-date { font-size: 12px; color: var(--text-dim); white-space: nowrap; }
+.log-session { font-size: 11px; color: var(--text-faint); }
+.log-card-actions { display: flex; gap: 4px; flex-shrink: 0; margin-left: 8px; }
+.icon-btn {
+  width: 26px; height: 26px; border-radius: 5px; border: none;
+  background: transparent; cursor: pointer; font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-faint); transition: all 0.12s;
+}
+.icon-btn:hover { background: var(--surface2); color: var(--text); }
+.icon-btn.del:hover { background: var(--red-bg); color: var(--red); }
+
+.log-card-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+.log-section { display: flex; flex-direction: column; gap: 5px; }
+.log-section-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--text-faint);
+}
+.log-section-text {
+  font-size: 13px; line-height: 1.85; color: var(--text);
+  white-space: pre-wrap; word-break: keep-all;
+}
+.log-followup {
+  background: var(--orange-bg);
+  border: 1px solid #f5d09a;
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+.log-followup .log-section-label { color: var(--orange); }
+.log-followup .log-section-text { color: #7a4500; }
+.log-emotion { display: flex; align-items: center; gap: 8px; }
+.emotion-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+/* 상담 건수 요약 */
+.summary-row {
+  display: flex; gap: 10px; flex-wrap: wrap;
+  padding: 12px 16px; background: var(--surface2);
+  border: 1px solid var(--border); border-radius: 8px;
+  flex-shrink: 0;
+}
+.summary-chip {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12px; color: var(--text-dim);
+}
+.summary-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* ── 오른쪽: 상담기법 패널 ── */
+.panel-right {
+  width: 0; overflow: hidden;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  transition: width 0.25s ease;
+  flex-shrink: 0;
+  display: flex; flex-direction: column;
+}
+.panel-right.open { width: 300px; }
+.panel-right-top {
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid var(--border-light);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.panel-right-title {
+  font-family: 'Noto Serif KR', serif; font-size: 15px; font-weight: 700;
+  color: var(--text); white-space: nowrap;
+}
+.close-btn {
+  width: 26px; height: 26px; border-radius: 5px; border: none;
+  background: var(--surface2); cursor: pointer; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-dim); transition: all 0.12s; flex-shrink: 0;
+}
+.close-btn:hover { background: var(--border); color: var(--text); }
+
+.technique-scroll { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 18px; }
+.tech-section { display: flex; flex-direction: column; gap: 8px; }
+.tech-section-title {
+  font-size: 12px; font-weight: 700; color: var(--accent);
+  letter-spacing: 0.5px; padding-bottom: 5px;
+  border-bottom: 1.5px solid var(--accent-light);
+}
+.tech-item {
+  padding: 10px 12px; border-radius: 7px;
+  background: var(--surface2); border: 1px solid var(--border-light);
+}
+.tech-item-title { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.tech-item-desc { font-size: 11px; line-height: 1.75; color: var(--text-dim); }
+.tech-note {
+  font-size: 11px; line-height: 1.8; color: var(--text-dim);
+  background: var(--accent-light); border-radius: 6px; padding: 10px 12px;
+  border-left: 3px solid var(--accent);
+}
+
+/* ══ 모달: 기록 입력/수정 ══ */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(28,33,54,0.4); z-index: 200;
+  align-items: center; justify-content: center;
+  backdrop-filter: blur(2px);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; width: 540px; max-width: 95vw;
+  max-height: 90vh; overflow-y: auto;
+  box-shadow: 0 10px 48px rgba(28,33,54,0.18);
+  animation: modalIn 0.18s ease;
+  display: flex; flex-direction: column;
+}
+@keyframes modalIn { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform:none; } }
+.modal-header {
+  padding: 22px 24px 16px;
+  border-bottom: 1px solid var(--border-light);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.modal-title { font-family: 'Noto Serif KR', serif; font-size: 17px; font-weight: 700; color: var(--text); }
+.modal-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; flex: 1; }
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-light);
+  display: flex; justify-content: flex-end; gap: 10px;
+  flex-shrink: 0;
+}
+
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field-label { font-size: 12px; font-weight: 600; color: var(--text-dim); }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.finput, .fselect, .ftextarea {
+  font-family: 'Noto Sans KR', sans-serif; font-size: 13px;
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text); padding: 9px 11px; border-radius: 7px;
+  width: 100%; outline: none; transition: border-color 0.15s, background 0.15s;
+}
+.finput:focus, .fselect:focus, .ftextarea:focus { border-color: var(--accent); background: #fff; }
+.ftextarea { resize: vertical; min-height: 90px; line-height: 1.75; }
+.ftextarea.tall { min-height: 120px; }
+
+/* 감정 선택 */
+.emotion-picker { display: flex; gap: 8px; flex-wrap: wrap; }
+.emo-chip {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 11px; border-radius: 20px;
+  border: 1.5px solid var(--border); background: var(--surface2);
+  font-size: 12px; color: var(--text-dim); cursor: pointer; transition: all 0.13s;
+}
+.emo-chip:hover { border-color: var(--accent); color: var(--accent); }
+.emo-chip.on { font-weight: 700; }
+.emo-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* 모달 버튼 */
+.mbtn {
+  font-family: 'Noto Sans KR', sans-serif; font-size: 13px; font-weight: 600;
+  padding: 10px 22px; border-radius: 7px; border: none; cursor: pointer; transition: all 0.13s;
+}
+.mbtn-cancel { background: var(--surface2); color: var(--text-dim); border: 1px solid var(--border); }
+.mbtn-cancel:hover { color: var(--text); }
+.mbtn-save { background: var(--accent); color: #fff; }
+.mbtn-save:hover { background: var(--accent-hover); }
+
+/* 학생 추가 모달 */
+.add-student-modal .modal-body { gap: 12px; }
+
+/* 인쇄 */
+@media print {
+  .panel-left, .panel-right, .main-header .header-actions, .log-card-actions { display: none !important; }
+  .app { display: block; }
+  .panel-main { height: auto; overflow: visible; }
+  .main-header { border-bottom: 2px solid #333; }
+  .main-body { overflow: visible; padding: 16px 0; }
+  .log-card { page-break-inside: avoid; box-shadow: none; border-color: #ccc; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ══════════ 왼쪽: 학생 목록 ══════════ -->
+<aside class="panel-left">
+  <div class="panel-left-top">
+    <div class="brand-tag">교컴 · 교사 도구</div>
+    <div class="brand-title">학생<br>상담일지</div>
+  </div>
+
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="학생 검색..." oninput="filterStudents()">
+  </div>
+
+  <div class="student-list" id="studentList"></div>
+
+  <div style="display:flex;gap:6px;margin:0 10px 8px;">
+    <button class="add-student-btn" style="flex:1;margin:0" onclick="openAddStudent()">+ 개별 추가</button>
+    <button class="add-student-btn" style="flex:1;margin:0;border-color:var(--accent);color:var(--accent)" onclick="openBulkImport()">📋 학급 일괄</button>
+  </div>
+
+  <button class="technique-btn" onclick="toggleTechPanel()">
+    📚 상담 기법 참고
+  </button>
+</aside>
+
+<!-- ══════════ 가운데: 상담일지 ══════════ -->
+<main class="panel-main">
+  <div class="main-header" id="mainHeader" style="display:none">
+    <div class="main-header-left">
+      <div class="header-avatar" id="headerAvatar"></div>
+      <div>
+        <div class="header-name" id="headerName"></div>
+        <div class="header-sub" id="headerSub"></div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="hbtn hbtn-ghost" onclick="window.print()">🖨 인쇄</button>
+      <button class="hbtn hbtn-ghost" onclick="editStudent()">✏️ 정보 수정</button>
+      <button class="hbtn hbtn-danger" onclick="deleteStudent()">삭제</button>
+      <button class="hbtn hbtn-accent" onclick="openAddLog()">+ 상담 기록</button>
+    </div>
+  </div>
+
+  <div class="main-body" id="mainBody">
+    <div class="empty-state">
+      <div class="icon">📋</div>
+      <p>왼쪽에서 학생을 선택하거나<br>새 학생을 추가해 상담 기록을 시작하세요.</p>
+    </div>
+  </div>
+</main>
+
+<!-- ══════════ 오른쪽: 상담기법 패널 ══════════ -->
+<aside class="panel-right" id="techPanel">
+  <div class="panel-right-top">
+    <div class="panel-right-title">📚 상담 기법 참고</div>
+    <button class="close-btn" onclick="toggleTechPanel()">✕</button>
+  </div>
+  <div class="technique-scroll">
+
+    <div class="tech-section">
+      <div class="tech-section-title">기본 태도 원칙</div>
+      <div class="tech-item">
+        <div class="tech-item-title">무조건적 긍정적 존중</div>
+        <div class="tech-item-desc">학생의 생각·감정·행동을 판단하지 않고 있는 그대로 수용합니다. 동의하지 않더라도 공감을 먼저 표현하세요.</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-item-title">공감적 이해</div>
+        <div class="tech-item-desc">학생의 입장에서 감정과 상황을 이해하고, 그 감정이 타당하다는 것을 언어로 표현해 줍니다.</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-item-title">일치성 (진실성)</div>
+        <div class="tech-item-desc">교사 자신의 감정과 표현이 일치해야 합니다. 억지 미소나 형식적 반응은 신뢰를 해칩니다.</div>
+      </div>
+    </div>
+
+    <div class="tech-section">
+      <div class="tech-section-title">경청 기술</div>
+      <div class="tech-item">
+        <div class="tech-item-title">적극적 경청</div>
+        <div class="tech-item-desc">눈 맞춤, 고개 끄덕임, 적절한 추임새("그렇구나", "음")로 집중하고 있음을 전달합니다. 말을 끊지 않습니다.</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-item-title">반영 (Reflection)</div>
+        <div class="tech-item-desc">학생이 말한 내용을 다른 말로 되돌려 줍니다.<br>예: "네가 친구에게 무시당한 것 같아서 많이 속상했구나."</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-item-title">명료화</div>
+        <div class="tech-item-desc">학생의 말이 모호할 때 구체적으로 질문합니다.<br>예: "그게 어떤 의미인지 좀 더 얘기해 줄 수 있어?"</div>
+      </div>
+    </div>
+
+    <div class="tech-section">
+      <div class="tech-section-title">질문 기술</div>
+      <div class="tech-item">
+        <div class="tech-item-title">개방형 질문 우선</div>
+        <div class="tech-item-desc">"예/아니오"로 끝나는 질문보다 "어떻게", "왜", "그때 어떤 기분이었어?"처럼 이야기를 끌어내는 질문을 합니다.</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-item-title">기적 질문 (해결중심)</div>
+        <div class="tech-item-desc">"내일 아침 기적이 일어나서 이 문제가 해결됐다면, 무엇이 달라져 있을까?"처럼 가능성을 상상하게 합니다.</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-item-title">척도 질문</div>
+        <div class="tech-item-desc">"지금 기분이 10점 만점에 몇 점이야?" 숫자로 현재 상태를 파악하고 변화를 추적하는 데 유용합니다.</div>
+      </div>
+    </div>
+
+    <div class="tech-section">
+      <div class="tech-section-title">주의할 점</div>
+      <div class="tech-note">
+        ⚠️ <strong>비밀보장의 한계</strong>를 초기에 안내하세요. 자해·타해 위험이 있는 경우, 학대가 의심되는 경우에는 보호 의무가 우선합니다.<br><br>
+        ⚠️ 해결책을 <strong>서두르지</strong> 마세요. 교사가 먼저 답을 제시하기보다 학생 스스로 생각하게 돕는 것이 핵심입니다.<br><br>
+        ⚠️ 상담 내용은 <strong>반드시 비밀 유지</strong>해야 합니다. 다른 학생·교사·학부모에게 임의로 공유하지 마세요.
+      </div>
+    </div>
+
+    <div class="tech-section">
+      <div class="tech-section-title">위기 신호 체크리스트</div>
+      <div class="tech-item" style="border-left: 3px solid var(--red);">
+        <div class="tech-item-title" style="color:var(--red)">즉각 개입 필요 신호</div>
+        <div class="tech-item-desc">
+          □ 죽고 싶다, 사라지고 싶다는 말<br>
+          □ 자해 흔적 또는 계획 언급<br>
+          □ 갑작스러운 학교 기피·결석<br>
+          □ 급격한 성적 하락 + 무기력<br>
+          □ 지속적 따돌림 정황<br>
+          □ 신체적 학대 의심 징후
+        </div>
+      </div>
+    </div>
+
+    <div class="tech-section">
+      <div class="tech-section-title">후속 조치 원칙</div>
+      <div class="tech-item">
+        <div class="tech-item-title">다음 상담 예고</div>
+        <div class="tech-item-desc">상담을 마칠 때 "다음에 또 이야기 나눠보자"고 말해 관계의 지속성을 전달합니다.</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-item-title">기록의 중요성</div>
+        <div class="tech-item-desc">상담 직후 핵심 내용을 기록하세요. 시간이 지날수록 기억은 흐려지고 기록만이 남습니다.</div>
+      </div>
+    </div>
+
+  </div>
+</aside>
+</div><!-- /app -->
+
+<!-- ══ 학생 추가/수정 모달 ══ -->
+<div class="modal-overlay" id="studentModal" onclick="handleOverlay(event,'studentModal')">
+  <div class="modal add-student-modal" style="width:420px">
+    <div class="modal-header">
+      <div class="modal-title" id="studentModalTitle">학생 추가</div>
+      <button class="close-btn" onclick="closeModal('studentModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <div class="field-label">이름 *</div>
+        <input class="finput" id="sName" placeholder="학생 이름">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <div class="field-label">학년</div>
+          <input class="finput" id="sGrade" placeholder="예: 3학년">
+        </div>
+        <div class="field">
+          <div class="field-label">반</div>
+          <input class="finput" id="sClass" placeholder="예: 2반">
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-label">번호</div>
+        <input class="finput" id="sNumber" placeholder="예: 15번" type="number">
+      </div>
+      <div class="field">
+        <div class="field-label">메모 (가정환경, 주요 특이사항 등)</div>
+        <textarea class="ftextarea" id="sMemo" placeholder="기초 정보, 주의사항 등 자유롭게 입력"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="mbtn mbtn-cancel" onclick="closeModal('studentModal')">취소</button>
+      <button class="mbtn mbtn-save" onclick="saveStudent()">저장</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ 학급 일괄 입력 모달 ══ -->
+<div class="modal-overlay" id="bulkModal" onclick="handleOverlay(event,'bulkModal')">
+  <div class="modal" style="width:580px">
+    <div class="modal-header">
+      <div class="modal-title">📋 학급 학생 일괄 입력</div>
+      <button class="close-btn" onclick="closeModal('bulkModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--surface2);border:1px solid var(--border-light);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text-faint);text-transform:uppercase;">학급 공통 정보</div>
+        <div class="field-row">
+          <div class="field">
+            <div class="field-label">학년</div>
+            <input class="finput" id="bGrade" placeholder="예: 3학년">
+          </div>
+          <div class="field">
+            <div class="field-label">반</div>
+            <input class="finput" id="bClass" placeholder="예: 2반">
+          </div>
+        </div>
+      </div>
+      <div style="background:var(--accent-light);border-radius:7px;padding:12px 14px;font-size:12px;line-height:1.85;color:var(--accent);">
+        <strong>입력 형식</strong> — 한 줄에 한 명씩 입력합니다.<br>
+        번호와 이름을 함께 쓰거나 이름만 써도 됩니다.<br>
+        <span style="opacity:0.7">예: &nbsp;<code>1 홍길동</code> &nbsp;또는 &nbsp;<code>홍길동</code> &nbsp;또는 &nbsp;<code>1. 홍길동</code></span>
+      </div>
+      <div class="field">
+        <div class="field-label">학생 명단 *</div>
+        <textarea class="ftextarea" id="bRoster" style="min-height:200px;font-family:monospace;font-size:13px;line-height:1.9"
+          placeholder="1 홍길동&#10;2 이순신&#10;3 강감찬&#10;4 유관순&#10;5 안중근&#10;..." oninput="previewBulk()"></textarea>
+      </div>
+      <div id="bulkPreview" style="display:none;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text-faint);text-transform:uppercase;margin-bottom:8px;">미리보기</div>
+        <div id="bulkPreviewList" style="display:flex;flex-wrap:wrap;gap:6px;max-height:120px;overflow-y:auto;padding:4px 0;"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface2);border-radius:7px;border:1px solid var(--border-light);">
+        <input type="checkbox" id="bSkipDup" checked style="width:15px;height:15px;accent-color:var(--accent);cursor:pointer;">
+        <label for="bSkipDup" style="font-size:12px;color:var(--text-dim);cursor:pointer;">이미 등록된 같은 이름의 학생은 건너뜀</label>
+      </div>
+    </div>
+    <div class="modal-footer" style="justify-content:space-between;align-items:center;">
+      <div id="bulkCount" style="font-size:13px;color:var(--text-faint);"></div>
+      <div style="display:flex;gap:10px;">
+        <button class="mbtn mbtn-cancel" onclick="closeModal('bulkModal')">취소</button>
+        <button class="mbtn mbtn-save" onclick="saveBulk()">일괄 등록</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 상담 기록 입력/수정 모달 ══ -->
+<div class="modal-overlay" id="logModal" onclick="handleOverlay(event,'logModal')">
+  <div class="modal" style="width:560px">
+    <div class="modal-header">
+      <div class="modal-title" id="logModalTitle">상담 기록 추가</div>
+      <button class="close-btn" onclick="closeModal('logModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-row">
+        <div class="field">
+          <div class="field-label">상담 날짜 *</div>
+          <input class="finput" id="lDate" type="date">
+        </div>
+        <div class="field">
+          <div class="field-label">상담 유형 *</div>
+          <select class="fselect" id="lType">
+            <option value="학업">📘 학업</option>
+            <option value="교우관계">🤝 교우관계</option>
+            <option value="가정환경">🏠 가정환경</option>
+            <option value="진로">🎯 진로</option>
+            <option value="정서·심리">💙 정서·심리</option>
+            <option value="행동">⚡ 행동</option>
+            <option value="기타">📌 기타</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-label">상담 방법</div>
+        <select class="fselect" id="lMethod">
+          <option value="개별 면담">개별 면담</option>
+          <option value="전화 상담">전화 상담</option>
+          <option value="학부모 상담">학부모 상담</option>
+          <option value="관찰">관찰</option>
+          <option value="온라인 채팅">온라인 채팅</option>
+          <option value="기타">기타</option>
+        </select>
+      </div>
+      <div class="field">
+        <div class="field-label">학생 감정 상태</div>
+        <div class="emotion-picker" id="emotionPicker">
+          <div class="emo-chip" data-emo="매우 안정" data-color="#3a7d5c" onclick="selectEmo(this)"><span class="emo-dot" style="background:#3a7d5c"></span>매우 안정</div>
+          <div class="emo-chip" data-emo="안정" data-color="#5a9a6a" onclick="selectEmo(this)"><span class="emo-dot" style="background:#5a9a6a"></span>안정</div>
+          <div class="emo-chip" data-emo="보통" data-color="#a0a0a0" onclick="selectEmo(this)"><span class="emo-dot" style="background:#a0a0a0"></span>보통</div>
+          <div class="emo-chip" data-emo="불안" data-color="#c08030" onclick="selectEmo(this)"><span class="emo-dot" style="background:#c08030"></span>불안</div>
+          <div class="emo-chip" data-emo="슬픔" data-color="#6070b0" onclick="selectEmo(this)"><span class="emo-dot" style="background:#6070b0"></span>슬픔</div>
+          <div class="emo-chip" data-emo="분노" data-color="#c04040" onclick="selectEmo(this)"><span class="emo-dot" style="background:#c04040"></span>분노</div>
+          <div class="emo-chip" data-emo="위기" data-color="#900000" onclick="selectEmo(this)"><span class="emo-dot" style="background:#900000"></span>위기</div>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-label">상담 내용 *</div>
+        <textarea class="ftextarea tall" id="lContent" placeholder="상담 중 나눈 이야기, 학생의 주요 발언, 교사의 개입 내용을 기록합니다."></textarea>
+      </div>
+      <div class="field">
+        <div class="field-label">후속 조치 / 계획</div>
+        <textarea class="ftextarea" id="lFollowup" placeholder="다음 상담 계획, 학부모 연락 여부, 전문기관 연계 여부 등을 기록합니다."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="mbtn mbtn-cancel" onclick="closeModal('logModal')">취소</button>
+      <button class="mbtn mbtn-save" onclick="saveLog()">저장</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════
+// 데이터 & 상태
+// ════════════════════════════════
+const STORAGE_KEY = 'kyocom_counseling_v1';
+let db = loadDB();
+let currentStudentId = null;
+let editingStudentId = null;
+let editingLogId = null;
+let techPanelOpen = false;
+
+function loadDB() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : { students: [] };
+  } catch { return { students: [] }; }
+}
+function saveDB() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+}
+
+// ════════════════════════════════
+// 아바타 색상
+// ════════════════════════════════
+const AVATAR_COLORS = ['#4a6fa5','#3a7d5c','#c06000','#6a4fa0','#b03030','#5a7a3a','#4a7070','#8a5040'];
+function avatarColor(id) {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) % AVATAR_COLORS.length;
+  return AVATAR_COLORS[h];
+}
+function initials(name) {
+  return name ? name.slice(-1) : '?';
+}
+
+// ════════════════════════════════
+// 상담 유형 색상
+// ════════════════════════════════
+const TYPE_STYLE = {
+  '학업':    { bg:'#e8eef8', color:'#3a5f90' },
+  '교우관계': { bg:'#ecf7f2', color:'#2a6040' },
+  '가정환경': { bg:'#fff4e6', color:'#904800' },
+  '진로':    { bg:'#f2eeff', color:'#5840a0' },
+  '정서·심리':{ bg:'#fdf0f0', color:'#902020' },
+  '행동':    { bg:'#f0f8e8', color:'#3a6020' },
+  '기타':    { bg:'#f0f2f5', color:'#505870' },
+};
+
+// ════════════════════════════════
+// 렌더링 - 학생 목록
+// ════════════════════════════════
+function renderStudentList(filter='') {
+  const list = document.getElementById('studentList');
+  const filtered = db.students.filter(s =>
+    s.name.includes(filter) || (s.grade||'').includes(filter) || (s.class||'').includes(filter)
+  );
+  if (filtered.length === 0) {
+    list.innerHTML = `<div style="padding:20px 10px;text-align:center;font-size:12px;color:var(--text-faint);">${filter ? '검색 결과 없음' : '학생을 추가해 주세요'}</div>`;
+    return;
+  }
+  list.innerHTML = filtered.map(s => {
+    const logCount = (s.logs||[]).length;
+    const col = avatarColor(s.id);
+    const active = s.id === currentStudentId ? ' active' : '';
+    const meta = [s.grade, s.class, s.number ? s.number+'번' : ''].filter(Boolean).join(' ');
+    return `
+      <div class="student-item${active}" onclick="selectStudent('${s.id}')">
+        <div class="student-avatar" style="background:${col}">${initials(s.name)}</div>
+        <div class="student-info">
+          <div class="student-name">${s.name}</div>
+          <div class="student-meta">${meta || '정보 없음'}</div>
+        </div>
+        ${logCount > 0 ? `<div class="student-badge">${logCount}</div>` : ''}
+      </div>`;
+  }).join('');
+}
+
+// ════════════════════════════════
+// 렌더링 - 상담 일지
+// ════════════════════════════════
+function renderLogs(studentId) {
+  const s = db.students.find(x => x.id === studentId);
+  if (!s) return;
+  const body = document.getElementById('mainBody');
+  const header = document.getElementById('mainHeader');
+  header.style.display = 'flex';
+
+  // 헤더
+  const col = avatarColor(s.id);
+  document.getElementById('headerAvatar').style.background = col;
+  document.getElementById('headerAvatar').textContent = initials(s.name);
+  document.getElementById('headerName').textContent = s.name;
+  const meta = [s.grade, s.class, s.number ? s.number+'번' : '', s.memo ? '메모 있음' : ''].filter(Boolean).join(' · ');
+  document.getElementById('headerSub').textContent = meta || '학생 정보 없음';
+
+  const logs = (s.logs||[]).slice().reverse(); // 최신순
+
+  if (logs.length === 0) {
+    body.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">💬</div>
+        <p><strong>${s.name}</strong> 학생의 상담 기록이 없습니다.<br>오른쪽 위 <strong>+ 상담 기록</strong> 버튼으로 시작하세요.</p>
+      </div>`;
+    return;
+  }
+
+  // 유형별 요약
+  const counts = {};
+  (s.logs||[]).forEach(l => { counts[l.type] = (counts[l.type]||0)+1; });
+  const summaryChips = Object.entries(counts).map(([type, cnt]) => {
+    const st = TYPE_STYLE[type] || TYPE_STYLE['기타'];
+    return `<div class="summary-chip"><div class="summary-dot" style="background:${st.color}"></div>${type} ${cnt}회</div>`;
+  }).join('');
+
+  body.innerHTML = `
+    <div class="summary-row">
+      <div class="summary-chip"><strong>총 ${s.logs.length}회</strong> 상담</div>
+      ${summaryChips}
+    </div>
+    ${logs.map(log => renderLogCard(log, s.id)).join('')}`;
+}
+
+function renderLogCard(log, studentId) {
+  const st = TYPE_STYLE[log.type] || TYPE_STYLE['기타'];
+  const emoColor = log.emoColor || '#a0a0a0';
+  const emoText = log.emotion || '';
+  const followup = log.followup ? `
+    <div class="log-section log-followup">
+      <div class="log-section-label">후속 조치 / 계획</div>
+      <div class="log-section-text">${escHtml(log.followup)}</div>
+    </div>` : '';
+  const emoHtml = emoText ? `
+    <div class="log-section">
+      <div class="log-section-label">감정 상태</div>
+      <div class="log-emotion">
+        <div class="emotion-dot" style="background:${emoColor}"></div>
+        <span style="font-size:13px;color:var(--text-dim)">${emoText}</span>
+      </div>
+    </div>` : '';
+
+  return `
+    <div class="log-card" id="card-${log.id}">
+      <div class="log-card-header">
+        <div class="log-card-left">
+          <div class="log-type-badge" style="background:${st.bg};color:${st.color}">${log.type}</div>
+          <div class="log-date">${log.date}</div>
+          <div class="log-session">${log.method || ''}</div>
+        </div>
+        <div class="log-card-actions">
+          <button class="icon-btn" title="수정" onclick="editLog('${studentId}','${log.id}')">✏️</button>
+          <button class="icon-btn del" title="삭제" onclick="deleteLog('${studentId}','${log.id}')">🗑️</button>
+        </div>
+      </div>
+      <div class="log-card-body">
+        ${emoHtml}
+        <div class="log-section">
+          <div class="log-section-label">상담 내용</div>
+          <div class="log-section-text">${escHtml(log.content)}</div>
+        </div>
+        ${followup}
+      </div>
+    </div>`;
+}
+
+function escHtml(str) {
+  return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+// ════════════════════════════════
+// 학생 선택
+// ════════════════════════════════
+function selectStudent(id) {
+  currentStudentId = id;
+  renderStudentList(document.getElementById('searchInput').value);
+  renderLogs(id);
+}
+
+function filterStudents() {
+  renderStudentList(document.getElementById('searchInput').value);
+}
+
+// ════════════════════════════════
+// 학생 추가/수정
+// ════════════════════════════════
+function openAddStudent() {
+  editingStudentId = null;
+  document.getElementById('studentModalTitle').textContent = '학생 추가';
+  document.getElementById('sName').value = '';
+  document.getElementById('sGrade').value = '';
+  document.getElementById('sClass').value = '';
+  document.getElementById('sNumber').value = '';
+  document.getElementById('sMemo').value = '';
+  openModal('studentModal');
+}
+
+function editStudent() {
+  const s = db.students.find(x => x.id === currentStudentId);
+  if (!s) return;
+  editingStudentId = s.id;
+  document.getElementById('studentModalTitle').textContent = '학생 정보 수정';
+  document.getElementById('sName').value = s.name;
+  document.getElementById('sGrade').value = s.grade||'';
+  document.getElementById('sClass').value = s.class||'';
+  document.getElementById('sNumber').value = s.number||'';
+  document.getElementById('sMemo').value = s.memo||'';
+  openModal('studentModal');
+}
+
+function saveStudent() {
+  const name = document.getElementById('sName').value.trim();
+  if (!name) { alert('이름을 입력해 주세요.'); return; }
+  if (editingStudentId) {
+    const s = db.students.find(x => x.id === editingStudentId);
+    if (s) {
+      s.name = name;
+      s.grade = document.getElementById('sGrade').value.trim();
+      s.class = document.getElementById('sClass').value.trim();
+      s.number = document.getElementById('sNumber').value.trim();
+      s.memo = document.getElementById('sMemo').value.trim();
+    }
+  } else {
+    db.students.push({
+      id: 's' + Date.now(),
+      name,
+      grade: document.getElementById('sGrade').value.trim(),
+      class: document.getElementById('sClass').value.trim(),
+      number: document.getElementById('sNumber').value.trim(),
+      memo: document.getElementById('sMemo').value.trim(),
+      logs: [],
+    });
+  }
+  saveDB();
+  closeModal('studentModal');
+  renderStudentList();
+  if (editingStudentId && editingStudentId === currentStudentId) renderLogs(currentStudentId);
+}
+
+function deleteStudent() {
+  const s = db.students.find(x => x.id === currentStudentId);
+  if (!s) return;
+  if (!confirm(`"${s.name}" 학생의 모든 상담 기록을 삭제하시겠습니까?`)) return;
+  db.students = db.students.filter(x => x.id !== currentStudentId);
+  saveDB();
+  currentStudentId = null;
+  renderStudentList();
+  document.getElementById('mainHeader').style.display = 'none';
+  document.getElementById('mainBody').innerHTML = `
+    <div class="empty-state">
+      <div class="icon">📋</div>
+      <p>왼쪽에서 학생을 선택하거나<br>새 학생을 추가해 상담 기록을 시작하세요.</p>
+    </div>`;
+}
+
+// ════════════════════════════════
+// 상담 기록 추가/수정
+// ════════════════════════════════
+function openAddLog() {
+  if (!currentStudentId) return;
+  editingLogId = null;
+  document.getElementById('logModalTitle').textContent = '상담 기록 추가';
+  document.getElementById('lDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('lType').value = '학업';
+  document.getElementById('lMethod').value = '개별 면담';
+  document.getElementById('lContent').value = '';
+  document.getElementById('lFollowup').value = '';
+  document.querySelectorAll('.emo-chip').forEach(c => c.classList.remove('on'));
+  openModal('logModal');
+}
+
+function editLog(studentId, logId) {
+  const s = db.students.find(x => x.id === studentId);
+  if (!s) return;
+  const log = (s.logs||[]).find(l => l.id === logId);
+  if (!log) return;
+  editingLogId = logId;
+  document.getElementById('logModalTitle').textContent = '상담 기록 수정';
+  document.getElementById('lDate').value = log.date;
+  document.getElementById('lType').value = log.type;
+  document.getElementById('lMethod').value = log.method||'개별 면담';
+  document.getElementById('lContent').value = log.content||'';
+  document.getElementById('lFollowup').value = log.followup||'';
+  document.querySelectorAll('.emo-chip').forEach(c => {
+    c.classList.toggle('on', c.dataset.emo === log.emotion);
+    if (c.dataset.emo === log.emotion) c.style.borderColor = c.dataset.color;
+  });
+  openModal('logModal');
+}
+
+function selectEmo(el) {
+  document.querySelectorAll('.emo-chip').forEach(c => {
+    c.classList.remove('on');
+    c.style.borderColor = '';
+    c.style.background = '';
+    c.style.color = '';
+  });
+  el.classList.add('on');
+  el.style.borderColor = el.dataset.color;
+  el.style.background = el.dataset.color + '18';
+  el.style.color = el.dataset.color;
+}
+
+function saveLog() {
+  const date = document.getElementById('lDate').value;
+  const content = document.getElementById('lContent').value.trim();
+  if (!date) { alert('날짜를 입력해 주세요.'); return; }
+  if (!content) { alert('상담 내용을 입력해 주세요.'); return; }
+  const emoEl = document.querySelector('.emo-chip.on');
+  const s = db.students.find(x => x.id === currentStudentId);
+  if (!s) return;
+  if (!s.logs) s.logs = [];
+
+  const logData = {
+    date, type: document.getElementById('lType').value,
+    method: document.getElementById('lMethod').value,
+    content, followup: document.getElementById('lFollowup').value.trim(),
+    emotion: emoEl ? emoEl.dataset.emo : '',
+    emoColor: emoEl ? emoEl.dataset.color : '',
+  };
+
+  if (editingLogId) {
+    const idx = s.logs.findIndex(l => l.id === editingLogId);
+    if (idx !== -1) { s.logs[idx] = { ...s.logs[idx], ...logData }; }
+  } else {
+    s.logs.push({ id: 'l' + Date.now(), ...logData });
+  }
+  saveDB();
+  closeModal('logModal');
+  renderLogs(currentStudentId);
+  renderStudentList(document.getElementById('searchInput').value);
+}
+
+function deleteLog(studentId, logId) {
+  if (!confirm('이 상담 기록을 삭제하시겠습니까?')) return;
+  const s = db.students.find(x => x.id === studentId);
+  if (!s) return;
+  s.logs = (s.logs||[]).filter(l => l.id !== logId);
+  saveDB();
+  renderLogs(studentId);
+  renderStudentList(document.getElementById('searchInput').value);
+}
+
+// ════════════════════════════════
+// 상담기법 패널
+// ════════════════════════════════
+function toggleTechPanel() {
+  techPanelOpen = !techPanelOpen;
+  document.getElementById('techPanel').classList.toggle('open', techPanelOpen);
+}
+
+// ════════════════════════════════
+// 모달 유틸
+// ════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function handleOverlay(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
+
+
+// ════════════════════════════════
+// 학급 일괄 입력
+// ════════════════════════════════
+function openBulkImport() {
+  document.getElementById('bGrade').value = '';
+  document.getElementById('bClass').value = '';
+  document.getElementById('bRoster').value = '';
+  document.getElementById('bulkPreview').style.display = 'none';
+  document.getElementById('bulkPreviewList').innerHTML = '';
+  document.getElementById('bulkCount').textContent = '';
+  openModal('bulkModal');
+}
+
+function parseRoster(text) {
+  return text.split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0)
+    .map((line, idx) => {
+      // 패턴: "1 홍길동" | "1. 홍길동" | "1.홍길동" | "홍길동"
+      const m = line.match(/^(\d+)[.\s]+(.+)$/) || line.match(/^()(.+)$/);
+      if (!m) return null;
+      return {
+        number: m[1] || String(idx + 1),
+        name: m[2].trim()
+      };
+    })
+    .filter(x => x && x.name.length > 0);
+}
+
+function previewBulk() {
+  const text = document.getElementById('bRoster').value;
+  const parsed = parseRoster(text);
+  const preview = document.getElementById('bulkPreview');
+  const list = document.getElementById('bulkPreviewList');
+  const countEl = document.getElementById('bulkCount');
+
+  if (parsed.length === 0) {
+    preview.style.display = 'none';
+    countEl.textContent = '';
+    return;
+  }
+
+  preview.style.display = 'block';
+  list.innerHTML = parsed.map(s =>
+    `<div style="display:flex;align-items:center;gap:5px;padding:4px 10px;background:var(--surface2);border:1px solid var(--border-light);border-radius:20px;font-size:12px;color:var(--text-dim);">
+      <span style="font-size:10px;color:var(--text-faint);font-weight:600;">${s.number}번</span>
+      <span style="color:var(--text);font-weight:600;">${s.name}</span>
+    </div>`
+  ).join('');
+  countEl.textContent = `${parsed.length}명 인식됨`;
+}
+
+function saveBulk() {
+  const text = document.getElementById('bRoster').value;
+  const parsed = parseRoster(text);
+  if (parsed.length === 0) { alert('명단을 입력해 주세요.'); return; }
+
+  const grade = document.getElementById('bGrade').value.trim();
+  const cls   = document.getElementById('bClass').value.trim();
+  const skipDup = document.getElementById('bSkipDup').checked;
+  const existingNames = db.students.map(s => s.name);
+
+  let added = 0, skipped = 0;
+  parsed.forEach(s => {
+    if (skipDup && existingNames.includes(s.name)) { skipped++; return; }
+    db.students.push({
+      id: 's' + Date.now() + Math.random().toString(36).slice(2, 6),
+      name: s.name,
+      grade,
+      class: cls,
+      number: s.number,
+      memo: '',
+      logs: [],
+    });
+    added++;
+  });
+
+  saveDB();
+  closeModal('bulkModal');
+  renderStudentList();
+
+  const msg = added > 0
+    ? `${added}명이 등록되었습니다.${skipped > 0 ? ` (중복 ${skipped}명 건너뜀)` : ''}`
+    : `모두 중복된 이름입니다. 등록된 학생이 없습니다.`;
+  alert(msg);
+}
+
+// ════════════════════════════════
+// 초기 렌더링
+// ════════════════════════════════
+renderStudentList();
+</script>
+</body>
+</html>
